@@ -6,64 +6,72 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background: #000; color: white; font-family: sans-serif; overflow: hidden; }
-        #start-overlay { position: absolute; z-index: 10; background: #000; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
-        button { padding: 20px 40px; font-size: 2rem; cursor: pointer; border: none; border-radius: 10px; background: #fbbf24; font-weight: bold; }
-        #timer { font-size: 3rem; }
-        #display-text { display: none; font-family: 'Dancing Script', cursive; font-size: 5rem; color: #fbbf24; text-align: center; }
+        body { margin: 0; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #000; color: white; font-family: sans-serif; }
+        button { padding: 20px 40px; font-size: 1.5rem; cursor: pointer; border: none; border-radius: 10px; background: #fbbf24; font-weight: bold; margin: 10px; }
+        .hidden { display: none; }
+        #display-text { font-family: 'Dancing Script', cursive; font-size: 4rem; color: #fbbf24; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
-    <div id="start-overlay"><button onclick="start()">Duckie</button></div>
-    <div id="timer"></div>
-    <div id="display-text">Happy Birthday Duckie</div>
+    <button id="btn1" onclick="stage1()">Duckie</button>
+    <button id="btn2" class="hidden" onclick="stage2()">Are you ready?</button>
+    
+    <button id="btn3" class="hidden" onclick="stage3()">Click here for the divine message</button>
+    
+    <button id="btn4" class="hidden" onclick="stage4()">Click to get Dobby's msg</button>
+
+    <div id="display-text" class="hidden">Happy Birthday Duckie</div>
 
     <script>
-        // Target: April 29, 2026, 09:00:00 AM
-        const target = new Date('April 29, 2026 09:00:00').getTime();
-        const durationClimax = 151000; // 2m 31s in milliseconds
-        
         const anticipation = new Audio('https://files.catbox.moe/yvw73c.wav');
         const climax = new Audio('https://files.catbox.moe/a0vdgr.wav');
-        const wish = new Audio('https://files.catbox.moe/xuh937.wav');
+        const hbdShout = new Audio('https://files.catbox.moe/xuh937.wav');
         const personal = new Audio('https://files.catbox.moe/0r97nk.wav');
 
-        anticipation.loop = true;
-
-        function start() {
-            document.getElementById('start-overlay').style.display = 'none';
-            // Start playing the looping anticipation
-            anticipation.play().catch(e => console.log("Autoplay blocked, user interaction required."));
-            setInterval(update, 500);
+        function stage1() {
+            anticipation.loop = true;
+            anticipation.play();
+            document.getElementById('btn1').classList.add('hidden');
+            document.getElementById('btn2').classList.remove('hidden');
         }
 
-        function update() {
+        function stage2() {
+            anticipation.pause();
+            climax.play();
+            document.getElementById('btn2').classList.add('hidden');
+        }
+
+        // Logic to show btn3 automatically at the specific time
+        setInterval(() => {
             const now = new Date().getTime();
-            const diff = target - now;
-
-            // At 2m 31s before the target, switch to climax audio
-            if (diff > 0 && diff <= durationClimax && anticipation.loop) {
-                anticipation.loop = false;
-                anticipation.pause();
-                climax.play();
+            const unlockTime = new Date('May 1, 2026 23:59:50').getTime();
+            
+            if (now >= unlockTime && document.getElementById('btn3').classList.contains('hidden')) {
+                document.getElementById('btn3').classList.remove('hidden');
             }
+        }, 500);
 
-            // Exactly at the target time
-            if (diff <= 0 && diff > -1000) {
-                document.getElementById('timer').style.display = 'none';
-                document.getElementById('display-text').style.display = 'block';
-                confetti({ particleCount: 500, spread: 200, origin: { y: 0.6 } });
-            } else if (diff > 0) {
-                const s = Math.floor((diff / 1000) % 60);
-                const m = Math.floor((diff / (1000 * 60)) % 60);
-                document.getElementById('timer').innerText = `${m}m ${s}s`;
-            }
+        function stage3() {
+            climax.pause();
+            hbdShout.play();
+            document.getElementById('display-text').classList.remove('hidden');
+            document.getElementById('btn3').classList.add('hidden');
+            document.getElementById('btn4').classList.remove('hidden');
+            
+            // 1 minute of confetti
+            let end = Date.now() + 60000;
+            (function frame() {
+                confetti({ particleCount: 5, spread: 10, origin: { x: Math.random(), y: Math.random() } });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            }());
         }
 
-        // Sequence: Climax (2m 31s) -> Wish -> Personal Message
-        climax.onended = () => wish.play();
-        wish.onended = () => personal.play();
+        function stage4() {
+            hbdShout.pause();
+            personal.play();
+            document.getElementById('btn4').classList.add('hidden');
+        }
     </script>
 </body>
 </html>
