@@ -2,28 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Happy Birthday Duckie</title>
+    <title>For Aarvee</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
     <style>
         body { margin: 0; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #000; color: white; font-family: sans-serif; }
         button { padding: 20px 40px; font-size: 1.5rem; cursor: pointer; border: none; border-radius: 10px; background: #fbbf24; font-weight: bold; margin: 10px; }
         .hidden { display: none; }
+        #timerDisplay { font-size: 2rem; margin-bottom: 20px; color: #fff; }
         #display-text { font-family: 'Dancing Script', cursive; font-size: 4rem; color: #fbbf24; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
     <button id="btn1" onclick="stage1()">Duckie</button>
+    <div id="timerDisplay" class="hidden"></div>
     <button id="btn2" class="hidden" onclick="stage2()">Are you ready?</button>
-    
     <button id="btn3" class="hidden" onclick="stage3()">Click here for the divine message</button>
-    
     <button id="btn4" class="hidden" onclick="stage4()">Click to get Dobby's msg</button>
 
     <div id="display-text" class="hidden">Happy Birthday Duckie</div>
 
     <script>
+        const target = new Date('May 2, 2026 00:00:00').getTime();
         const anticipation = new Audio('https://files.catbox.moe/yvw73c.wav');
         const climax = new Audio('https://files.catbox.moe/a0vdgr.wav');
         const hbdShout = new Audio('https://files.catbox.moe/xuh937.wav');
@@ -33,7 +34,7 @@
             anticipation.loop = true;
             anticipation.play();
             document.getElementById('btn1').classList.add('hidden');
-            document.getElementById('btn2').classList.remove('hidden');
+            document.getElementById('timerDisplay').classList.remove('hidden');
         }
 
         function stage2() {
@@ -42,36 +43,52 @@
             document.getElementById('btn2').classList.add('hidden');
         }
 
-        // Logic to show btn3 automatically at the specific time
-        setInterval(() => {
-            const now = new Date().getTime();
-            const unlockTime = new Date('May 1, 2026 23:59:50').getTime();
-            
-            if (now >= unlockTime && document.getElementById('btn3').classList.contains('hidden')) {
-                document.getElementById('btn3').classList.remove('hidden');
-            }
-        }, 500);
-
         function stage3() {
             climax.pause();
             hbdShout.play();
             document.getElementById('display-text').classList.remove('hidden');
             document.getElementById('btn3').classList.add('hidden');
-            document.getElementById('btn4').classList.remove('hidden');
             
-            // 1 minute of confetti
             let end = Date.now() + 60000;
             (function frame() {
                 confetti({ particleCount: 5, spread: 10, origin: { x: Math.random(), y: Math.random() } });
                 if (Date.now() < end) requestAnimationFrame(frame);
             }());
+
+            hbdShout.onended = () => {
+                document.getElementById('btn4').classList.remove('hidden');
+            };
         }
 
         function stage4() {
-            hbdShout.pause();
             personal.play();
             document.getElementById('btn4').classList.add('hidden');
         }
+
+        setInterval(() => {
+            const now = new Date().getTime();
+            const diff = target - now;
+            
+            // Update Timer
+            if (!document.getElementById('btn1').classList.contains('hidden') === false) {
+                const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((diff % (1000 * 60)) / 1000);
+                document.getElementById('timerDisplay').innerText = `${d}d ${h}h ${m}m ${s}s`;
+            }
+
+            // Logic for buttons
+            const threeMinsBefore = target - (3 * 60 * 1000);
+            const tenSecsBefore = target - (10 * 1000);
+
+            if (now >= threeMinsBefore && document.getElementById('btn2').classList.contains('hidden') && !anticipation.paused) {
+                document.getElementById('btn2').classList.remove('hidden');
+            }
+            if (now >= tenSecsBefore && document.getElementById('btn3').classList.contains('hidden') && document.getElementById('btn2').classList.contains('hidden')) {
+                document.getElementById('btn3').classList.remove('hidden');
+            }
+        }, 500);
     </script>
 </body>
 </html>
