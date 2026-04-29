@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Happy Birthday Duckie</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background: #000; color: white; font-family: sans-serif; overflow: hidden; }
+        #start-overlay { position: absolute; z-index: 10; background: #000; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+        button { padding: 20px 40px; font-size: 2rem; cursor: pointer; border: none; border-radius: 10px; background: #fbbf24; font-weight: bold; }
+        #timer { font-size: 3rem; }
+        #display-text { display: none; font-family: 'Dancing Script', cursive; font-size: 5rem; color: #fbbf24; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div id="start-overlay"><button onclick="start()">Duckie</button></div>
+    <div id="timer"></div>
+    <div id="display-text">Happy Birthday Duckie</div>
+
+    <script>
+        // Target: April 29, 2026, 09:00:00 AM
+        const target = new Date('April 29, 2026 09:00:00').getTime();
+        const durationClimax = 151000; // 2m 31s in milliseconds
+        
+        const anticipation = new Audio('https://files.catbox.moe/yvw73c.wav');
+        const climax = new Audio('https://files.catbox.moe/a0vdgr.wav');
+        const wish = new Audio('https://files.catbox.moe/xuh937.wav');
+        const personal = new Audio('https://files.catbox.moe/0r97nk.wav');
+
+        anticipation.loop = true;
+
+        function start() {
+            document.getElementById('start-overlay').style.display = 'none';
+            // Start playing the looping anticipation
+            anticipation.play().catch(e => console.log("Autoplay blocked, user interaction required."));
+            setInterval(update, 500);
+        }
+
+        function update() {
+            const now = new Date().getTime();
+            const diff = target - now;
+
+            // At 2m 31s before the target, switch to climax audio
+            if (diff > 0 && diff <= durationClimax && anticipation.loop) {
+                anticipation.loop = false;
+                anticipation.pause();
+                climax.play();
+            }
+
+            // Exactly at the target time
+            if (diff <= 0 && diff > -1000) {
+                document.getElementById('timer').style.display = 'none';
+                document.getElementById('display-text').style.display = 'block';
+                confetti({ particleCount: 500, spread: 200, origin: { y: 0.6 } });
+            } else if (diff > 0) {
+                const s = Math.floor((diff / 1000) % 60);
+                const m = Math.floor((diff / (1000 * 60)) % 60);
+                document.getElementById('timer').innerText = `${m}m ${s}s`;
+            }
+        }
+
+        // Sequence: Climax (2m 31s) -> Wish -> Personal Message
+        climax.onended = () => wish.play();
+        wish.onended = () => personal.play();
+    </script>
+</body>
+</html>
